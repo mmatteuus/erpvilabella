@@ -391,13 +391,15 @@ function ColumnFilter<TData>({
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <Select
           value={value}
-          onValueChange={(v) => column.setFilterValue(v || undefined)}
+          onValueChange={(v) =>
+            column.setFilterValue(v === "__all__" ? undefined : v || undefined)
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Todos" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="__all__">Todos</SelectItem>
             {options.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 {opt.label}
