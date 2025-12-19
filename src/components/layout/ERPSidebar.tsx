@@ -1,27 +1,23 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  ShoppingCart,
-  Package,
-  Warehouse,
-  Truck,
-  Factory,
-  DollarSign,
-  BookOpen,
-  Users,
   BarChart3,
-  Settings,
-  FileText,
   ChevronDown,
+  DollarSign,
   Flower2,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+  LayoutDashboard,
+  Settings,
+  ShoppingCart,
+  Users,
+  Warehouse,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { useState } from 'react';
+} from "@/components/ui/collapsible";
+import { useState } from "react";
+import { usePreferencesStore } from "@/store/preferences";
 
 interface NavItem {
   title: string;
@@ -31,90 +27,55 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   {
-    title: 'Vendas',
+    title: "Vendas",
     icon: ShoppingCart,
-    children: [
-      { title: 'Pedidos', href: '/sales/orders' },
-      { title: 'Clientes', href: '/sales/customers' },
-      { title: 'Orçamentos', href: '/sales/quotes' },
-    ],
+    children: [{ title: "Pedidos", href: "/vendas/pedidos" }],
   },
   {
-    title: 'Produtos',
-    icon: Package,
-    children: [
-      { title: 'Catálogo', href: '/products/catalog' },
-      { title: 'Categorias', href: '/products/categories' },
-      { title: 'Kits', href: '/products/bundles' },
-    ],
-  },
-  {
-    title: 'Estoque',
+    title: "Estoque",
     icon: Warehouse,
     children: [
-      { title: 'Visão Geral', href: '/inventory/overview' },
-      { title: 'Itens', href: '/inventory/items' },
-      { title: 'Lotes', href: '/inventory/batches' },
-      { title: 'Perdas', href: '/inventory/waste' },
+      { title: "Produtos", href: "/estoque/produtos" },
+      { title: "Movimentações", href: "/estoque/movimentacoes" },
     ],
   },
   {
-    title: 'Compras',
-    icon: Truck,
+    title: "Cadastros",
+    icon: Users,
     children: [
-      { title: 'Fornecedores', href: '/purchase/vendors' },
-      { title: 'Pedidos', href: '/purchase/orders' },
+      { title: "Clientes", href: "/clientes" },
+      { title: "Fornecedores", href: "/fornecedores" },
     ],
   },
   {
-    title: 'Produção',
-    icon: Factory,
-    children: [
-      { title: 'Ordens', href: '/mrp/work-orders' },
-      { title: 'Fichas Técnicas', href: '/mrp/boms' },
-    ],
-  },
-  {
-    title: 'Entregas',
-    icon: Truck,
-    children: [
-      { title: 'Agenda', href: '/logistics/schedule' },
-      { title: 'Entregadores', href: '/logistics/drivers' },
-    ],
-  },
-  {
-    title: 'Financeiro',
+    title: "Financeiro",
     icon: DollarSign,
     children: [
-      { title: 'Visão Geral', href: '/finance/overview' },
-      { title: 'A Receber', href: '/finance/ar' },
-      { title: 'A Pagar', href: '/finance/ap' },
-      { title: 'Fluxo de Caixa', href: '/finance/cashflow' },
+      { title: "Contas a receber", href: "/financeiro/contas-a-receber" },
+      { title: "Contas a pagar", href: "/financeiro/contas-a-pagar" },
     ],
   },
-  {
-    title: 'Contábil',
-    icon: BookOpen,
-    children: [
-      { title: 'Plano de Contas', href: '/accounting/chart-of-accounts' },
-      { title: 'Lançamentos', href: '/accounting/journal-entries' },
-    ],
-  },
-  { title: 'RH', href: '/hr/employees', icon: Users },
-  { title: 'Relatórios', href: '/reports', icon: BarChart3 },
-  { title: 'Auditoria', href: '/audit/logs', icon: FileText },
-  { title: 'Configurações', href: '/settings', icon: Settings },
+  { title: "Relatórios", href: "/relatorios", icon: BarChart3 },
+  { title: "Configurações", href: "/configuracoes", icon: Settings },
 ];
 
 export function ERPSidebar() {
+  const { sidebarCollapsed } = usePreferencesStore();
   const location = useLocation();
-  const [openItems, setOpenItems] = useState<string[]>(['Vendas', 'Estoque']);
+  const [openItems, setOpenItems] = useState<string[]>([
+    "Vendas",
+    "Estoque",
+    "Cadastros",
+    "Financeiro",
+  ]);
+
+  if (sidebarCollapsed) return null;
 
   const toggleItem = (title: string) => {
     setOpenItems((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     );
   };
 
@@ -124,7 +85,6 @@ export function ERPSidebar() {
 
   return (
     <aside className="hidden lg:flex lg:flex-col w-64 border-r bg-sidebar h-screen sticky top-0">
-      {/* Logo */}
       <div className="h-16 flex items-center gap-3 px-6 border-b">
         <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
           <Flower2 className="w-5 h-5 text-primary-foreground" />
@@ -135,7 +95,6 @@ export function ERPSidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
         <ul className="space-y-1">
           {navItems.map((item) => (
@@ -147,18 +106,18 @@ export function ERPSidebar() {
                 >
                   <CollapsibleTrigger
                     className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                       isParentActive(item.children)
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                     )}
                   >
                     <item.icon className="w-4 h-4" />
                     <span className="flex-1 text-left">{item.title}</span>
                     <ChevronDown
                       className={cn(
-                        'w-4 h-4 transition-transform',
-                        openItems.includes(item.title) && 'rotate-180'
+                        "w-4 h-4 transition-transform",
+                        openItems.includes(item.title) && "rotate-180",
                       )}
                     />
                   </CollapsibleTrigger>
@@ -168,10 +127,10 @@ export function ERPSidebar() {
                         key={child.href}
                         to={child.href}
                         className={cn(
-                          'block px-3 py-2 rounded-md text-sm transition-colors',
+                          "block px-3 py-2 rounded-md text-sm transition-colors",
                           isActive(child.href)
-                            ? 'bg-primary text-primary-foreground font-medium'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50'
+                            ? "bg-primary text-primary-foreground font-medium"
+                            : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50",
                         )}
                       >
                         {child.title}
@@ -183,10 +142,10 @@ export function ERPSidebar() {
                 <Link
                   to={item.href!}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                     isActive(item.href!)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                      ? "bg-primary text-primary-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50",
                   )}
                 >
                   <item.icon className="w-4 h-4" />
@@ -198,7 +157,6 @@ export function ERPSidebar() {
         </ul>
       </nav>
 
-      {/* Footer */}
       <div className="border-t p-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -209,6 +167,14 @@ export function ERPSidebar() {
             <p className="text-xs text-muted-foreground">Administrador</p>
           </div>
         </div>
+        <a
+          href="https://mtsferreira.dev"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-3 block text-xs font-medium text-primary hover:underline"
+        >
+          Desenvolvido por MtsFerreira
+        </a>
       </div>
     </aside>
   );

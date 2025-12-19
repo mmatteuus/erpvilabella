@@ -1,49 +1,78 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Search,
-  Plus,
   Bell,
-  Menu,
   Calendar,
-  Command,
   ChevronDown,
+  Command,
   Flower2,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+  Menu,
+  PanelLeft,
+  Plus,
+  Search,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
-import { ERPMobileNav } from './ERPMobileNav';
-import { CommandPalette } from './CommandPalette';
+} from "@/components/ui/sheet";
+import { CommandPalette } from "./CommandPalette";
+import { ERPMobileNav } from "./ERPMobileNav";
+import { usePreferencesStore } from "@/store/preferences";
 
 export function ERPTopbar() {
   const [showCommand, setShowCommand] = useState(false);
-  const [period, setPeriod] = useState('Hoje');
+  const [period, setPeriod] = useState("Hoje");
+  const { sidebarCollapsed, toggleSidebarCollapsed } = usePreferencesStore();
 
   const notifications = [
-    { id: 1, title: 'Estoque crítico', desc: 'Rosas vermelhas abaixo do mínimo', type: 'warning' },
-    { id: 2, title: 'Pedido pendente', desc: '3 pedidos aguardando aprovação', type: 'info' },
-    { id: 3, title: 'Entrega atrasada', desc: 'Pedido VB-2024-003 em atraso', type: 'danger' },
+    {
+      id: 1,
+      title: "Estoque crítico",
+      desc: "Rosas vermelhas abaixo do mínimo",
+      type: "warning" as const,
+    },
+    {
+      id: 2,
+      title: "Pedido pendente",
+      desc: "3 pedidos aguardando aprovação",
+      type: "info" as const,
+    },
+    {
+      id: 3,
+      title: "Entrega atrasada",
+      desc: "Pedido VB-2024-003 em atraso",
+      type: "danger" as const,
+    },
   ];
 
   return (
     <>
       <header className="sticky top-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-full items-center gap-4 px-4 lg:px-6">
-          {/* Mobile Menu */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="hidden lg:inline-flex"
+            onClick={toggleSidebarCollapsed}
+            aria-label={sidebarCollapsed ? "Abrir sidebar" : "Fechar sidebar"}
+          >
+            <PanelLeft className="h-5 w-5" />
+          </Button>
+
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden">
@@ -57,19 +86,20 @@ export function ERPTopbar() {
                 </div>
                 <SheetTitle className="text-left">
                   <span className="font-semibold">Vila Bella</span>
-                  <span className="block text-xs text-muted-foreground font-normal">ERP Floricultura</span>
+                  <span className="block text-xs text-muted-foreground font-normal">
+                    ERP Floricultura
+                  </span>
                 </SheetTitle>
               </SheetHeader>
               <ERPMobileNav />
             </SheetContent>
           </Sheet>
 
-          {/* Search */}
           <div className="hidden md:flex flex-1 max-w-md">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar... (Ctrl+K)"
+                placeholder="Buscar pedidos, clientes, produtos… (Ctrl+K)"
                 className="pl-9 pr-12 bg-muted/50 border-0 focus-visible:ring-1"
                 onClick={() => setShowCommand(true)}
                 readOnly
@@ -80,32 +110,49 @@ export function ERPTopbar() {
             </div>
           </div>
 
-          {/* Period Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="hidden sm:flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden sm:flex gap-2"
+              >
                 <Calendar className="h-4 w-4" />
                 {period}
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setPeriod('Hoje')}>Hoje</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPeriod('7 dias')}>Últimos 7 dias</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPeriod('30 dias')}>Últimos 30 dias</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setPeriod('Este mês')}>Este mês</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPeriod("Hoje")}>
+                Hoje
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPeriod("7 dias")}>
+                Últimos 7 dias
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPeriod("30 dias")}>
+                Últimos 30 dias
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setPeriod("Este mês")}>
+                Este mês
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* New Order Button */}
-          <Button asChild className="gap-2">
-            <Link to="/sales/orders/new">
-              <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">Novo Pedido</span>
-            </Link>
-          </Button>
+          <div className="hidden sm:flex items-center gap-2">
+            <Button asChild className="gap-2">
+              <Link to="/vendas/pedidos/novo">
+                <Plus className="h-4 w-4" />
+                <span>Novo pedido</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="gap-2">
+              <Link to="/estoque/produtos/novo">
+                <Plus className="h-4 w-4" />
+                <span>Novo produto</span>
+              </Link>
+            </Button>
+          </div>
 
-          {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
@@ -120,19 +167,26 @@ export function ERPTopbar() {
                 <h4 className="font-semibold text-sm">Notificações</h4>
               </div>
               {notifications.map((n) => (
-                <DropdownMenuItem key={n.id} className="flex flex-col items-start gap-1 p-3">
+                <DropdownMenuItem
+                  key={n.id}
+                  className="flex flex-col items-start gap-1 p-3"
+                >
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
                       className={
-                        n.type === 'danger'
-                          ? 'badge-danger'
-                          : n.type === 'warning'
-                          ? 'badge-warning'
-                          : 'badge-info'
+                        n.type === "danger"
+                          ? "badge-danger"
+                          : n.type === "warning"
+                            ? "badge-warning"
+                            : "badge-info"
                       }
                     >
-                      {n.type === 'danger' ? 'Urgente' : n.type === 'warning' ? 'Alerta' : 'Info'}
+                      {n.type === "danger"
+                        ? "Urgente"
+                        : n.type === "warning"
+                          ? "Alerta"
+                          : "Info"}
                     </Badge>
                     <span className="font-medium text-sm">{n.title}</span>
                   </div>
@@ -142,7 +196,6 @@ export function ERPTopbar() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* User Avatar */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
@@ -153,8 +206,22 @@ export function ERPTopbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configurações</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">Sair</DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/configuracoes">Configurações</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a
+                  href="https://mtsferreira.dev"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Desenvolvido por MtsFerreira
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">
+                Sair
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

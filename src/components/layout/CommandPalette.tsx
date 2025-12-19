@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CommandDialog,
   CommandEmpty,
@@ -7,19 +8,18 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
+  DollarSign,
+  FileText,
   LayoutDashboard,
-  ShoppingCart,
   Package,
-  Warehouse,
-  Users,
   Plus,
   Search,
-  FileText,
-  DollarSign,
-} from 'lucide-react';
-import { useEffect } from 'react';
+  ShoppingCart,
+  Users,
+  Warehouse,
+} from "lucide-react";
 
 interface CommandPaletteProps {
   open: boolean;
@@ -31,14 +31,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         onOpenChange(!open);
       }
     };
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, [open, onOpenChange]);
 
   const runCommand = (command: () => void) => {
@@ -48,49 +48,65 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput placeholder="Digite um comando ou busque..." />
+      <CommandInput placeholder="Digite um comando ou busque…" />
       <CommandList>
         <CommandEmpty>Nenhum resultado encontrado.</CommandEmpty>
-        
-        <CommandGroup heading="Ações Rápidas">
-          <CommandItem onSelect={() => runCommand(() => navigate('/sales/orders/new'))}>
+
+        <CommandGroup heading="Ações rápidas">
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/vendas/pedidos/novo"))}
+          >
             <Plus className="mr-2 h-4 w-4" />
-            <span>Novo Pedido</span>
+            <span>Novo pedido</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/sales/customers'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/estoque/produtos/novo"))}
+          >
+            <Package className="mr-2 h-4 w-4" />
+            <span>Novo produto</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/clientes"))}>
             <Users className="mr-2 h-4 w-4" />
-            <span>Buscar Cliente</span>
+            <span>Buscar cliente</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/inventory/items'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/estoque/produtos"))}
+          >
             <Search className="mr-2 h-4 w-4" />
-            <span>Consultar Estoque</span>
+            <span>Consultar produtos</span>
           </CommandItem>
         </CommandGroup>
-        
+
         <CommandSeparator />
-        
+
         <CommandGroup heading="Navegação">
-          <CommandItem onSelect={() => runCommand(() => navigate('/dashboard'))}>
+          <CommandItem onSelect={() => runCommand(() => navigate("/dashboard"))}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/sales/orders'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/vendas/pedidos"))}
+          >
             <ShoppingCart className="mr-2 h-4 w-4" />
-            <span>Pedidos de Venda</span>
+            <span>Pedidos</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/products/catalog'))}>
-            <Package className="mr-2 h-4 w-4" />
-            <span>Catálogo de Produtos</span>
-          </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/inventory/overview'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/estoque/movimentacoes"))}
+          >
             <Warehouse className="mr-2 h-4 w-4" />
-            <span>Estoque</span>
+            <span>Movimentações</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/finance/overview'))}>
+          <CommandItem
+            onSelect={() =>
+              runCommand(() => navigate("/financeiro/contas-a-receber"))
+            }
+          >
             <DollarSign className="mr-2 h-4 w-4" />
-            <span>Financeiro</span>
+            <span>Contas a receber</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate('/reports'))}>
+          <CommandItem
+            onSelect={() => runCommand(() => navigate("/relatorios"))}
+          >
             <FileText className="mr-2 h-4 w-4" />
             <span>Relatórios</span>
           </CommandItem>
@@ -99,3 +115,4 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     </CommandDialog>
   );
 }
+

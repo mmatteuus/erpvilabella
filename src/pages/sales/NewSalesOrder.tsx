@@ -310,7 +310,12 @@ export default function NewSalesOrder() {
               </div>
               <div className="space-y-2">
                 <Label>Horário</Label>
-                <Select value={deliveryWindow} onValueChange={(v) => setDeliveryWindow(v as any)}>
+                <Select
+                  value={deliveryWindow}
+                  onValueChange={(v) =>
+                    setDeliveryWindow(v as "morning" | "afternoon" | "evening")
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
