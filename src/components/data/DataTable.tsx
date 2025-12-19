@@ -14,7 +14,7 @@ import {
   type VisibilityState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useMemo, useState, type ReactNode } from "react";
+import { isValidElement, useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -59,6 +59,42 @@ export type DataTableProps<TData> = {
   mobileCard?: (row: TData) => ReactNode;
   onRowClick?: (row: TData) => void;
 };
+
+function humanizeColumnId(columnId: string) {
+  const spaced = columnId
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim();
+
+  if (!spaced) return "Coluna";
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+function extractTextFromReactNode(node: ReactNode): string {
+  if (node == null || typeof node === "boolean") return "";
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(extractTextFromReactNode).join("");
+  if (isValidElement(node)) return extractTextFromReactNode(node.props.children);
+  return "";
+}
+
+function getColumnLabel<TData>(
+  column: Column<TData, unknown>,
+  renderedHeaderLabel?: string,
+) {
+  const meta = column.columnDef.meta as { label?: unknown } | undefined;
+  const metaLabel = meta?.label;
+  if (typeof metaLabel === "string" && metaLabel.trim()) return metaLabel;
+
+  if (typeof renderedHeaderLabel === "string" && renderedHeaderLabel.trim()) {
+    return renderedHeaderLabel.trim();
+  }
+
+  const header = column.columnDef.header;
+  if (typeof header === "string" && header.trim()) return header;
+
+  return humanizeColumnId(column.id);
+}
 
 export function DataTable<TData>({
   data,
@@ -133,6 +169,14 @@ export function DataTable<TData>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const renderedHeaderLabelById = new Map<string, string>();
+  for (const header of table.getFlatHeaders()) {
+    if (header.isPlaceholder) continue;
+    const rendered = flexRender(header.column.columnDef.header, header.getContext());
+    const text = extractTextFromReactNode(rendered).replace(/\s+/g, " ").trim();
+    if (text) renderedHeaderLabelById.set(header.column.id, text);
+  }
+
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
   const filterableColumns = table
     .getAllLeafColumns()
@@ -154,7 +198,7 @@ export function DataTable<TData>({
           </div>
 
           <div className="flex items-center gap-2">
-            <ColumnsMenu table={table} />
+            <ColumnsMenu table={table} labelById={renderedHeaderLabelById} />
             {selectedCount > 0 && (
               <span className="text-sm text-muted-foreground">
                 {selectedCount} selecionado(s)
@@ -166,7 +210,11 @@ export function DataTable<TData>({
         {filterableColumns.length > 0 && (
           <div className="grid gap-2 sm:grid-cols-2">
             {filterableColumns.map((column) => (
-              <ColumnFilter key={column.id} column={column} />
+              <ColumnFilter
+                key={column.id}
+                column={column}
+                label={getColumnLabel(column, renderedHeaderLabelById.get(column.id))}
+              />
             ))}
           </div>
         )}
@@ -218,7 +266,7 @@ export function DataTable<TData>({
         </div>
 
         <div className="flex items-center gap-2">
-          <ColumnsMenu table={table} />
+          <ColumnsMenu table={table} labelById={renderedHeaderLabelById} />
           {selectedCount > 0 && (
             <span className="text-sm text-muted-foreground">
               {selectedCount} selecionado(s)
@@ -230,7 +278,11 @@ export function DataTable<TData>({
       {filterableColumns.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {filterableColumns.map((column) => (
-            <ColumnFilter key={column.id} column={column} />
+            <ColumnFilter
+              key={column.id}
+              column={column}
+              label={getColumnLabel(column, renderedHeaderLabelById.get(column.id))}
+            />
           ))}
         </div>
       )}
@@ -306,7 +358,13 @@ export function DataTable<TData>({
   );
 }
 
-function ColumnsMenu<TData>({ table }: { table: TanstackTable<TData> }) {
+function ColumnsMenu<TData>({
+  table,
+  labelById,
+}: {
+  table: TanstackTable<TData>;
+  labelById: ReadonlyMap<string, string>;
+}) {
   const hideableColumns = table
     .getAllLeafColumns()
     .filter((c) => c.getCanHide() && c.id !== "__select");
@@ -329,8 +387,7 @@ function ColumnsMenu<TData>({ table }: { table: TanstackTable<TData> }) {
             checked={column.getIsVisible()}
             onCheckedChange={(value) => column.toggleVisibility(!!value)}
           >
-            {/* @ts-expect-error meta typing */}
-            {column.columnDef.meta?.label ?? String(column.columnDef.header ?? column.id)}
+            {getColumnLabel(column, labelById.get(column.id))}
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
@@ -368,8 +425,10 @@ function PaginationControls<TData>({ table }: { table: TanstackTable<TData> }) {
 
 function ColumnFilter<TData>({
   column,
+  label,
 }: {
   column: Column<TData, unknown>;
+  label: string;
 }) {
   const meta = column.columnDef.meta as
     | {
@@ -380,7 +439,6 @@ function ColumnFilter<TData>({
       }
     | undefined;
 
-  const label = meta?.label ?? String(column.columnDef.header ?? column.id);
   const variant = meta?.filterVariant ?? "text";
 
   if (variant === "select") {
